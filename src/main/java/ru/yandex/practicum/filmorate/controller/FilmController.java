@@ -138,7 +138,7 @@ public class FilmController {
         log.info("совершена валидация длительности");
         if (duration < 1) {
             log.error("введена неверная длительность фильма");
-            throw new ValidationException("Длительность фильма не может быть меньше 1");
+            throw new ValidationException("Длительность фильма не может быть отрицательной");
         }
     }
 }

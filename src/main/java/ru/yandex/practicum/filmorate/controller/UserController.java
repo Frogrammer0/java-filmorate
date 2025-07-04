@@ -40,8 +40,8 @@ public class UserController {
                 .map(User::getEmail)
                 .anyMatch(mail -> mail.equals(user.getEmail()));
         if (isMailExist) {
-            log.error("введен уже использующийся емейл");
-            throw new DuplicatedDataException("Этот емейл уже используется");
+            log.error("введен уже использующийся имейл");
+            throw new DuplicatedDataException("Этот имейл уже используется");
         }
 
         // формируем дополнительные данные
