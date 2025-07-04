@@ -7,10 +7,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +18,7 @@ import java.util.Map;
 public class FilmController {
 
     private final Map<Long, Film> films = new HashMap<>();
+    final LocalDate birthdayFilm = LocalDate.parse("1895-12-28");
 
     @GetMapping
     public Collection<Film> findAll() {
@@ -30,29 +28,12 @@ public class FilmController {
     @PostMapping
     public Film create(@RequestBody Film film) {
         // проверяем выполнение необходимых условий
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.error("название фильма не введено");
-            throw new ValidationException("Название фильма должно быть указано");
-        }
-        if (film.getDescription().length() > 200) {
-            log.error("размер описания фильма превышает допустимый размер");
-            throw new ValidationException("Описание фильма более 200 символов");
-        }
+        log.info("вызван метод create");
 
-        if (film.getReleaseDate() == null) {
-            log.error("не указана дата релиза");
-            throw new ValidationException("Дата релиза не указана");
-        } else {
-            film.setInstantReleaseDate(parseToInstant(film.getReleaseDate()));
-            if (film.getInstantReleaseDate().isBefore(film.getBirthdayFilm())) {
-                log.error("введена неверная дата релиза");
-                throw new ValidationException("Дата релиза слишком ранняя");
-            }
-        }
-        if (film.getDuration() < 0) {
-            log.error("введена отрицательная длительность фильма");
-            throw new ValidationException("Длительность фильма не может быть отрицательной");
-        }
+        validateName(film.getName());
+        validateDescription(film.getDescription());
+        validateReleaseDate(film.getReleaseDate());
+        validateDuration(film.getDuration());
 
         boolean isFilmExist = films.values()
                 .stream()
@@ -75,6 +56,7 @@ public class FilmController {
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
         // проверяем необходимые условия
+        log.info("вызван метод update");
         if (newFilm.getId() == 0) {
             log.error("не указан id фильма");
             throw new ValidationException("Id должен быть указан");
@@ -85,20 +67,23 @@ public class FilmController {
 
             // если фильм найден и все условия соблюдены, обновляем его содержимое
             if (newFilm.getName() != null) {
+                validateName(newFilm.getName());
                 oldFilm.setName(newFilm.getName());
                 log.info("изменено название фильма");
             }
             if (newFilm.getDuration() != 0) {
+                validateDuration(newFilm.getDuration());
                 oldFilm.setDuration(newFilm.getDuration());
                 log.info("изменена длительность фильма");
             }
             if (newFilm.getDescription() != null) {
+                validateDescription(newFilm.getDescription());
                 oldFilm.setDescription(newFilm.getDescription());
                 log.info("изменено описание фильма");
             }
             if (newFilm.getReleaseDate() != null) {
+                validateReleaseDate(newFilm.getReleaseDate());
                 oldFilm.setReleaseDate(newFilm.getReleaseDate());
-                oldFilm.setInstantReleaseDate(parseToInstant(newFilm.getReleaseDate()));
                 log.info("изменена дата релиза фильма");
             }
             return oldFilm;
@@ -109,6 +94,7 @@ public class FilmController {
 
     // вспомогательный метод для генерации идентификатора нового пользователя
     private long getNextId() {
+        log.info("вызван метод создания id");
         long currentMaxId = films.keySet()
                 .stream()
                 .mapToLong(id -> id)
@@ -117,12 +103,42 @@ public class FilmController {
         return ++currentMaxId;
     }
 
-    public static Instant parseToInstant(String dateString) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        LocalDate localDate = LocalDate.parse(dateString, formatter);
-
-        return localDate.atStartOfDay(ZoneId.systemDefault()).toInstant();
+    private void validateName(String name) {
+        log.info("совершена валидация названия");
+        if (name == null || name.isBlank()) {
+            log.error("название фильма не введено");
+            throw new ValidationException("Название фильма должно быть указано");
+        }
     }
 
+    private void validateDescription(String description) {
+        log.info("совершена валидация описания");
+        if (description != null) {
+            if (description.length() > 200) {
+                log.error("размер описания фильма превышает допустимый размер");
+                throw new ValidationException("Описание фильма более 200 символов");
+            }
+        }
+    }
 
+    private void validateReleaseDate(LocalDate releaseDate) {
+        log.info("совершена валидация даты релиза");
+        if (releaseDate == null) {
+            log.error("не указана дата релиза");
+            throw new ValidationException("Дата релиза не указана");
+        } else {
+            if (releaseDate.isBefore(birthdayFilm)) {
+                log.error("введена неверная дата релиза ");
+                throw new ValidationException("Дата релиза слишком ранняя");
+            }
+        }
+    }
+
+    private void validateDuration(long duration) {
+        log.info("совершена валидация длительности");
+        if (duration < 1) {
+            log.error("введена неверная длительность фильма");
+            throw new ValidationException("Длительность фильма не может быть меньше 1");
+        }
+    }
 }

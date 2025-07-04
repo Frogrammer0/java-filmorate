@@ -9,6 +9,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -26,7 +28,7 @@ public class FilmControllerTest {
         film.setName("testFilm");
         film.setDescription("testfilm");
         film.setDuration(120);
-        film.setReleaseDate("2000-01-01");
+        film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         Film createdFilm = controller.create(film);
 
@@ -40,7 +42,7 @@ public class FilmControllerTest {
         film.setName("testFilm");
         film.setDescription("testfilm");
         film.setDuration(120);
-        film.setReleaseDate("2000-01-01");
+        film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         Film createdFilm = controller.create(film);
 
@@ -48,7 +50,7 @@ public class FilmControllerTest {
         newFilm.setName("updateFilm");
         newFilm.setDescription("updatetestfilm");
         newFilm.setDuration(100);
-        newFilm.setReleaseDate("2000-01-01");
+        newFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
         newFilm.setId(1);
 
 
@@ -64,7 +66,7 @@ public class FilmControllerTest {
         film.setName("testFilm");
         film.setDescription("testfilm");
         film.setDuration(-120);
-        film.setReleaseDate("2000-01-01");
+        film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
         assertEquals("Длительность фильма не может быть отрицательной", ex.getMessage());
@@ -76,7 +78,7 @@ public class FilmControllerTest {
         film.setName(" ");
         film.setDescription("testfilm");
         film.setDuration(120);
-        film.setReleaseDate("2000-01-01");
+        film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
         assertEquals("Название фильма должно быть указано", ex.getMessage());
@@ -88,7 +90,7 @@ public class FilmControllerTest {
         film.setName("testFilm");
         film.setDescription("testfilm");
         film.setDuration(120);
-        film.setReleaseDate("2000-01-01");
+        film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         Film createdFilm = controller.create(film);
 
@@ -96,7 +98,7 @@ public class FilmControllerTest {
         dFilm.setName("testFilm");
         dFilm.setDescription("newtestfilm");
         dFilm.setDuration(122);
-        dFilm.setReleaseDate("2000-01-01");
+        dFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
 
 
         DuplicatedDataException ex = assertThrows(DuplicatedDataException.class, () -> controller.create(dFilm));
@@ -109,7 +111,7 @@ public class FilmControllerTest {
         film.setName("testFilm");
         film.setDescription("testfilm");
         film.setDuration(122);
-        film.setReleaseDate("2000-01-01");
+        film.setReleaseDate(LocalDate.parse("2000-01-01"));
         film.setId(99);
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(film));

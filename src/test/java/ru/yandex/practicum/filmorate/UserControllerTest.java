@@ -8,6 +8,9 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+
+import java.time.LocalDate;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -25,7 +28,7 @@ public class UserControllerTest {
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setName("Test");
-        user.setBirthday("2000-01-01");
+        user.setBirthday(LocalDate.parse("2000-01-01"));
 
         User createdUser = controller.create(user);
 
@@ -39,7 +42,7 @@ public class UserControllerTest {
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setName("Test");
-        user.setBirthday("2000-01-01");
+        user.setBirthday(LocalDate.parse("2000-01-01"));
 
         User createdUser = controller.create(user);
 
@@ -61,7 +64,7 @@ public class UserControllerTest {
         user.setEmail("invalidemail.com");
         user.setLogin("testuser");
         user.setName("Test");
-        user.setBirthday("2000-01-01");
+        user.setBirthday(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(user));
         assertEquals("Неверный формат адреса почты", ex.getMessage());
@@ -73,7 +76,7 @@ public class UserControllerTest {
         user.setEmail(" ");
         user.setLogin("testuser");
         user.setName("Test");
-        user.setBirthday("2000-01-01");
+        user.setBirthday(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(user));
         assertEquals("Имейл должен быть указан", ex.getMessage());
@@ -85,7 +88,7 @@ public class UserControllerTest {
         user.setEmail("test@example.com");
         user.setLogin("testuser");
         user.setName("Test");
-        user.setBirthday("2000-01-01");
+        user.setBirthday(LocalDate.parse("2000-01-01"));
 
         User createdUser = controller.create(user);
 
@@ -93,7 +96,7 @@ public class UserControllerTest {
         dUser.setEmail("test@example.com");
         dUser.setLogin("testuser1");
         dUser.setName("Test1");
-        dUser.setBirthday("2000-01-01");
+        dUser.setBirthday(LocalDate.parse("2000-01-01"));
 
         DuplicatedDataException ex = assertThrows(DuplicatedDataException.class, () -> controller.create(dUser));
         assertEquals("Этот имейл уже используется", ex.getMessage());
@@ -106,7 +109,7 @@ public class UserControllerTest {
         user.setLogin("newlogin");
         user.setEmail("new@example.com");
         user.setName("New Name");
-        user.setBirthday("2000-01-01");
+        user.setBirthday(LocalDate.parse("2000-01-01"));
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(user));
         assertTrue(ex.getMessage().contains("не найден"));
