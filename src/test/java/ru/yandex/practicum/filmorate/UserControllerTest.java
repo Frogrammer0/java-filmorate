@@ -8,6 +8,8 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
+import ru.yandex.practicum.filmorate.storage.user.UserValidator;
 
 import java.time.LocalDate;
 
@@ -16,10 +18,12 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class UserControllerTest {
     private UserController controller;
+    private UserStorage userStorage;
+    private UserValidator validator;
 
     @BeforeEach
     void setUp() {
-        controller = new UserController();
+        controller = new UserController(userStorage, validator);
     }
 
     @Test

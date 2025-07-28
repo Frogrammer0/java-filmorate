@@ -3,10 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.Set;
 
-/**
- * User.
- */
 @Data
 public class User {
 
@@ -14,8 +12,8 @@ public class User {
     String name;
     String email;
     LocalDate birthday;
-    long id;
-
-
+    Long id;
+    Set<Long> friends;
+    Set<Long> likes;
 
 }
