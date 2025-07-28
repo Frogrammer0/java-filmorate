@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,6 +25,22 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
+    public Collection<Film> findAll() {
+        return filmStorage.findAll();
+    }
+
+    public Film findFilmById(Long id) {
+        return filmStorage.findFilmById(id);
+    }
+
+    public Film create(Film film) {
+        return filmStorage.create(film);
+    }
+
+    public Film update(Film newFilm){
+        return filmStorage.update(newFilm);
+    }
+
     public void addLike(Long userId, Long filmId) {
         log.info("пользователь с id = {} поставил лайк фильму с id = {}", userId, filmId);
         User user = userStorage.findUserById(userId);
@@ -33,7 +50,7 @@ public class FilmService {
         film.getLikes().add(userId);
     }
 
-    public void removeLike(Long userId, Long filmId) {
+    public void deleteLike(Long userId, Long filmId) {
         log.info("пользователь с id = {} удалил лайк у фильма с id = {}", userId, filmId);
         User user = userStorage.findUserById(userId);
         Film film = filmStorage.findFilmById(filmId);
@@ -42,7 +59,7 @@ public class FilmService {
         film.getLikes().remove(userId);
     }
 
-    public Set<Long> topTenFilm(int count) {
+    public Set<Long> getTopFilm(long count) {
         log.info("запрошен топ 10 фильмов");
         return filmStorage.findAll().stream()
                 .sorted(Comparator.comparingLong((Film f) -> f.getLikes().size()).reversed())

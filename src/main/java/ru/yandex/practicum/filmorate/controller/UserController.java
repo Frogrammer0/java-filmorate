@@ -10,13 +10,12 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserValidator;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /*Добавьте методы, позволяющие пользователям добавлять друг друга в друзья, получать список общих
 друзей и лайкать фильмы. Проверьте, что все они работают корректно.
 
-        DELETE /users/{id}/friends/{friendId} — удаление из друзей.
-        GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями.
-        GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем.
         PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
 DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
         GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков. Если значение параметра count не задано, верните первые 10.
@@ -51,6 +50,20 @@ public class UserController {
         return Optional.ofNullable(userService.findUserById(userId));
     }
 
+    @GetMapping("/{userId}/friends")
+    @ResponseBody
+    public Set<User> findFriendsByUser(@PathVariable long userId) {
+        return userService.findFriendsByUser(userId);
+    }
+
+    @GetMapping("/{userId}/friends/common/{friendId}")
+    @ResponseBody
+    public Set<User> findCommonFriends(@PathVariable long userId, long friendId) {
+        return userService.showCommonFriends(userId, friendId).stream()
+                .map(id-> userService.findUserById(id))
+                .collect(Collectors.toSet());
+    }
+
     @PostMapping
     @ResponseBody
     public User create(@RequestBody User user) {
@@ -74,8 +87,13 @@ public class UserController {
 
     @DeleteMapping("{userId}/friends/{friendId}")
     public void removeFriend(@PathVariable long userId, long friendId){
-
+        log.info("вызван метод removeFriend");
+        userService.removeFriend(userId, friendId);
     }
+
+
+
+
 
 
 

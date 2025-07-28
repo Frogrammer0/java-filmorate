@@ -19,6 +19,12 @@ public class UserService {
         return userStorage.findAll();
     }
 
+    public Set<User> findFriendsByUser(long userId) {
+        return userStorage.findUserById(userId).getFriends().stream()
+                .map(this::findUserById)
+                .collect(Collectors.toSet());
+    }
+
     public User findUserById(long userId){
         return userStorage.findUserById(userId);
     }
@@ -47,7 +53,7 @@ public class UserService {
         friend.getFriends().remove(userId);
     }
 
-    public Set<Long> showMutualFriends(Long userId, Long friendId) {
+    public Set<Long> showCommonFriends(Long userId, Long friendId) {
         log.info("показ общих друзей у пользователей с id {} и {}", userId, friendId);
         User user = userStorage.findUserById(userId);
         User friend = userStorage.findUserById(friendId);
