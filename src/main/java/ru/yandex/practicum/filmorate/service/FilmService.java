@@ -42,11 +42,11 @@ public class FilmService {
         film.getLikes().remove(userId);
     }
 
-    public Set<Long> topTenFilm(int size) {
+    public Set<Long> topTenFilm(int count) {
         log.info("запрошен топ 10 фильмов");
         return filmStorage.findAll().stream()
                 .sorted(Comparator.comparingLong((Film f) -> f.getLikes().size()).reversed())
-                .limit(size)
+                .limit(count)
                 .map(Film::getId)
                 .collect(Collectors.toSet());
     }

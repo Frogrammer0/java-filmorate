@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.film.FilmValidator;
+import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.time.LocalDate;
 
@@ -21,10 +22,11 @@ public class FilmControllerTest {
     private FilmController controller;
     private FilmStorage filmStorage;
     private FilmValidator validator;
+    private UserStorage userStorage;
 
     @BeforeEach
     void setUp() {
-        controller = new FilmController(filmStorage, validator);
+        controller = new FilmController(filmStorage, validator, userStorage);
     }
 
     @Test
@@ -32,7 +34,7 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("testFilm");
         film.setDescription("testfilm");
-        film.setDuration(120);
+        film.setDuration(120L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         Film createdFilm = controller.create(film);
@@ -46,7 +48,7 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("testFilm");
         film.setDescription("testfilm");
-        film.setDuration(120);
+        film.setDuration(120L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         Film createdFilm = controller.create(film);
@@ -54,9 +56,9 @@ public class FilmControllerTest {
         Film newFilm = new Film();
         newFilm.setName("updateFilm");
         newFilm.setDescription("updatetestfilm");
-        newFilm.setDuration(100);
+        newFilm.setDuration(100L);
         newFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
-        newFilm.setId(1);
+        newFilm.setId(1L);
 
 
         Film updateFilm = controller.update(newFilm);
@@ -70,7 +72,7 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("testFilm");
         film.setDescription("testfilm");
-        film.setDuration(-120);
+        film.setDuration(-120L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
@@ -82,7 +84,7 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName(" ");
         film.setDescription("testfilm");
-        film.setDuration(120);
+        film.setDuration(120L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(film));
@@ -94,7 +96,7 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("testFilm");
         film.setDescription("testfilm");
-        film.setDuration(120);
+        film.setDuration(120L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
         Film createdFilm = controller.create(film);
@@ -102,7 +104,7 @@ public class FilmControllerTest {
         Film dFilm = new Film();
         dFilm.setName("testFilm");
         dFilm.setDescription("newtestfilm");
-        dFilm.setDuration(122);
+        dFilm.setDuration(122L);
         dFilm.setReleaseDate(LocalDate.parse("2000-01-01"));
 
 
@@ -115,9 +117,9 @@ public class FilmControllerTest {
         Film film = new Film();
         film.setName("testFilm");
         film.setDescription("testfilm");
-        film.setDuration(122);
+        film.setDuration(122L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
-        film.setId(99);
+        film.setId(99L);
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(film));
         assertTrue(ex.getMessage().contains("Фильм с id = " + film.getId() + " не найден"));

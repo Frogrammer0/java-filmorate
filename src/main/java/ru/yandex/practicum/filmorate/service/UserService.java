@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,6 +15,21 @@ import java.util.stream.Collectors;
 public class UserService {
     UserStorage userStorage;
 
+    public Collection<User> findAll(){
+        return userStorage.findAll();
+    }
+
+    public User findUserById(long userId){
+        return userStorage.findUserById(userId);
+    }
+
+    public User create(User user) {
+        return userStorage.create(user);
+    }
+
+    public User update(User newUser) {
+        return userStorage.update(newUser);
+    }
 
     public void addFriend(Long userId, Long friendId){
         log.info("пользователь с id= {} добавлен в друзья пользователю с id= {}", userId, friendId);

@@ -8,6 +8,9 @@ import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserValidator;
 
@@ -18,12 +21,13 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class UserControllerTest {
     private UserController controller;
-    private UserStorage userStorage;
+    private UserService userService;
     private UserValidator validator;
+    private FilmService filmService;
 
     @BeforeEach
     void setUp() {
-        controller = new UserController(userStorage, validator);
+        controller = new UserController(userService, validator, filmService);
     }
 
     @Test
@@ -54,7 +58,7 @@ public class UserControllerTest {
         newUser.setName("Update");
         newUser.setLogin("updateLogin");
         newUser.setEmail("update@example.com");
-        newUser.setId(1);
+        newUser.setId(1L);
 
         User updateUser = controller.update(newUser);
 
@@ -109,7 +113,7 @@ public class UserControllerTest {
     @Test
     void shouldThrowIfUserNotFound() {
         User user = new User();
-        user.setId(999);
+        user.setId(999L);
         user.setLogin("newlogin");
         user.setEmail("new@example.com");
         user.setName("New Name");
