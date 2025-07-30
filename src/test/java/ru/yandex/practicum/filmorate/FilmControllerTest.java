@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
@@ -19,13 +20,21 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class FilmControllerTest {
     private FilmController controller;
-    private FilmService filmService;
-    private FilmValidator validator;
-    private UserStorage userStorage;
+    private final FilmService filmService;
+    private final FilmValidator validator;
+
+
+    @Autowired
+    public FilmControllerTest(FilmService filmService, FilmValidator validator, UserStorage userStorage) {
+        this.filmService = filmService;
+        this.validator = validator;
+    }
+
 
     @BeforeEach
     void setUp() {
-        controller = new FilmController(filmService, validator, userStorage);
+        controller = new FilmController(filmService, validator);
+
     }
 
     @Test
@@ -45,8 +54,8 @@ public class FilmControllerTest {
     @Test
     void shouldUpdateFilmWithValidData() {
         Film film = new Film();
-        film.setName("testFilm");
-        film.setDescription("testfilm");
+        film.setName("testFilm1");
+        film.setDescription("testfilm1");
         film.setDuration(120L);
         film.setReleaseDate(LocalDate.parse("2000-01-01"));
 
@@ -91,7 +100,7 @@ public class FilmControllerTest {
     }
 
     @Test
-    void createUserShouldFailWithDuplicateEmail() {
+    void createFilmShouldFailWithDuplicateName() {
         Film film = new Film();
         film.setName("testFilm");
         film.setDescription("testfilm");

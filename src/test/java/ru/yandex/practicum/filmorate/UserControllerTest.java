@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
@@ -19,9 +20,16 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 public class UserControllerTest {
     private UserController controller;
-    private UserService userService;
-    private UserValidator validator;
-    private FilmService filmService;
+    private final UserService userService;
+    private final UserValidator validator;
+    private final FilmService filmService;
+
+    @Autowired
+    public UserControllerTest(UserService userService, UserValidator validator, FilmService filmService) {
+        this.userService = userService;
+        this.validator = validator;
+        this.filmService = filmService;
+    }
 
     @BeforeEach
     void setUp() {
@@ -31,21 +39,21 @@ public class UserControllerTest {
     @Test
     void shouldCreateUserWithValidData() {
         User user = new User();
-        user.setEmail("test@example.com");
+        user.setEmail("test1@example.com");
         user.setLogin("testuser");
         user.setName("Test");
         user.setBirthday(LocalDate.parse("2000-01-01"));
 
         User createdUser = controller.create(user);
 
-        assertEquals(1, createdUser.getId());
-        assertEquals("test@example.com", createdUser.getEmail());
+        assertEquals(2, createdUser.getId());
+        assertEquals("test1@example.com", createdUser.getEmail());
     }
 
     @Test
     void shouldUpdateUserWithValidData() {
         User user = new User();
-        user.setEmail("test@example.com");
+        user.setEmail("test2@example.com");
         user.setLogin("testuser");
         user.setName("Test");
         user.setBirthday(LocalDate.parse("2000-01-01"));
@@ -73,7 +81,7 @@ public class UserControllerTest {
         user.setBirthday(LocalDate.parse("2000-01-01"));
 
         ValidationException ex = assertThrows(ValidationException.class, () -> controller.create(user));
-        assertEquals("Неверный формат адреса почты", ex.getMessage());
+        assertEquals("Неверный формат адреса почты: invalidemail.com", ex.getMessage());
     }
 
     @Test

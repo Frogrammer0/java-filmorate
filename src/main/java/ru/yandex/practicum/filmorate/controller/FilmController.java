@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmValidator;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.List;
@@ -18,12 +17,10 @@ import java.util.Optional;
 public class FilmController {
     FilmService filmService;
     FilmValidator validator;
-    UserStorage userStorage;
 
-    public FilmController(FilmService filmService,FilmValidator validator, UserStorage userStorage) {
+    public FilmController(FilmService filmService,FilmValidator validator) {
         this.filmService = filmService;
         this.validator = validator;
-        this.userStorage = userStorage;
     }
 
     @GetMapping
