@@ -12,7 +12,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class InMemoryFilmStorage implements FilmStorage{
+public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
     private final FilmValidator validator = new FilmValidator();
 
@@ -80,7 +80,14 @@ public class InMemoryFilmStorage implements FilmStorage{
 
 
     public Film findFilmById(Long id) {
+        if (!ifFilmExist(id)) {
+            throw new NotFoundException("фильм с id" + id + "не найден");
+        }
         return films.get(id);
+    }
+
+    private boolean ifFilmExist(Long id) {
+        return films.containsKey(id);
     }
 
 

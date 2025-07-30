@@ -13,6 +13,7 @@ public class FilmValidator {
     final LocalDate birthdayFilm = LocalDate.parse("1895-12-28");
 
     public void validate(Film film) {
+        log.info("валидация фильма");
         validateName(film.getName());
         validateDescription(film.getDescription());
         validateReleaseDate(film.getReleaseDate());
@@ -21,7 +22,6 @@ public class FilmValidator {
 
 
     void validateName(String name) {
-        log.info("совершена валидация названия");
         if (name == null || name.isBlank()) {
             log.error("название фильма не введено");
             throw new ValidationException("Название фильма должно быть указано");
@@ -29,7 +29,6 @@ public class FilmValidator {
     }
 
     void validateDescription(String description) {
-        log.info("совершена валидация описания");
         if (description != null) {
             if (description.length() > 200) {
                 log.error("размер описания фильма превышает допустимый размер");
@@ -39,7 +38,6 @@ public class FilmValidator {
     }
 
     void validateReleaseDate(LocalDate releaseDate) {
-        log.info("совершена валидация даты релиза");
         if (releaseDate == null) {
             log.error("не указана дата релиза");
             throw new ValidationException("Дата релиза не указана");
@@ -52,7 +50,6 @@ public class FilmValidator {
     }
 
     void validateDuration(long duration) {
-        log.info("совершена валидация длительности");
         if (duration < 1) {
             log.error("введена неверная длительность фильма");
             throw new ValidationException("Длительность фильма не может быть отрицательной");

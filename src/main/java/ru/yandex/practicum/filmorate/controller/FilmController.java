@@ -8,17 +8,9 @@ import ru.yandex.practicum.filmorate.storage.film.FilmValidator;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 
-/*Добавьте методы, позволяющие пользователям добавлять друг друга в друзья, получать список общих
-друзей и лайкать фильмы. Проверьте, что все они работают корректно.
-
-       Убедитесь, что ваше приложение возвращает корректные HTTP-коды:
-        400 — если ошибка валидации: ValidationException;
-404 — для всех ситуаций, если искомый объект не найден;
-500 — если возникло исключение.*/
 
 @Slf4j
 @RestController
@@ -36,28 +28,28 @@ public class FilmController {
 
     @GetMapping
     public Collection<Film> findAll() {
+        log.info("GET /films - получить все фильмы");
         return filmService.findAll();
     }
 
     @GetMapping("/{filmId}")
     @ResponseBody
-    public Optional<Film> findFilmById(@PathVariable Long filmId){
+    public Optional<Film> findFilmById(@PathVariable Long filmId) {
+        log.info("GET /films/{filmId} - получить фильм по id");
         return Optional.ofNullable(filmService.findFilmById(filmId));
     }
 
-    @GetMapping("/popular?count={count}")
+    @GetMapping("/popular")
     @ResponseBody
-    public Set<Film> findPopular(@PathVariable long count){
-        return filmService.getTopFilm(count).stream()
-                .map(id -> filmService.findFilmById(id))
-                .collect(Collectors.toSet());
+    public List<Film> findPopular(@RequestParam(defaultValue = "10") long count) {
+        log.info("GET /films/popular - топ популярных фильмов");
+        return filmService.getTopFilm(count);
     }
 
     @PostMapping
     @ResponseBody
     public Film create(@RequestBody Film film) {
-        // проверяем выполнение необходимых условий
-        log.info("вызван метод create");
+        log.info("POST /films создание фильма");
         validator.validate(film);
         filmService.create(film);
         return film;
@@ -66,25 +58,20 @@ public class FilmController {
     @PutMapping
     @ResponseBody
     public Film update(@RequestBody Film newFilm) {
-        // проверяем необходимые условия
-        log.info("вызван метод update");
+        log.info("PUT /films обновление фильма");
         return filmService.update(newFilm);
     }
 
-    @PutMapping("/{id}/like/{userId} ")
-    public void addLike(@PathVariable long id, long userId){
+    @PutMapping("/{id}/like/{userId}")
+    public void addLike(@PathVariable long id, @PathVariable long userId) {
+        log.info("PUT /films/{}/like/ добавить лайк", id);
         filmService.addLike(userId, id);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id, long userId){
+    public void deleteLike(@PathVariable long id,@PathVariable long userId) {
+        log.info("DELETE /films/{}/like удалить лайк", id);
         filmService.deleteLike(userId, id);
     }
-
-
-
-
-
-
 
 }

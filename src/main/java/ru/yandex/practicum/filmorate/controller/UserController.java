@@ -5,24 +5,13 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserValidator;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/*Добавьте методы, позволяющие пользователям добавлять друг друга в друзья, получать список общих
-друзей и лайкать фильмы. Проверьте, что все они работают корректно.
 
-        PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
-DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
-        GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков. Если значение параметра count не задано, верните первые 10.
-Убедитесь, что ваше приложение возвращает корректные HTTP-коды:
-        400 — если ошибка валидации: ValidationException;
-404 — для всех ситуаций, если искомый объект не найден;
-500 — если возникло исключение.*/
 
 @Slf4j
 @RestController
@@ -32,7 +21,7 @@ public class UserController {
     UserValidator validator;
     FilmService filmService;
 
-    public UserController(UserService userService, UserValidator validator, FilmService filmService){
+    public UserController(UserService userService, UserValidator validator, FilmService filmService) {
         this.userService = userService;
         this.validator =  validator;
         this.filmService = filmService;
@@ -41,33 +30,37 @@ public class UserController {
     @GetMapping
     @ResponseBody
     public Collection<User> findAll() {
+        log.info("GET /users найти всех пользователей");
         return userService.findAll();
     }
 
     @GetMapping("/{userId}")
     @ResponseBody
     public Optional<User> findById(@PathVariable long userId) {
+        log.info("GET /users/{userId} найти пользователя по id");
         return Optional.ofNullable(userService.findUserById(userId));
     }
 
-    @GetMapping("/{userId}/friends")
+    @GetMapping("/{id}/friends")
     @ResponseBody
-    public Set<User> findFriendsByUser(@PathVariable long userId) {
-        return userService.findFriendsByUser(userId);
+    public Optional<Set<User>> findFriendsByUser(@PathVariable long id) {
+        log.info("GET /users/{}/friends найти друзей пользователя", id);
+        return userService.findFriendsByUser(id);
     }
 
-    @GetMapping("/{userId}/friends/common/{friendId}")
+    @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseBody
-    public Set<User> findCommonFriends(@PathVariable long userId, long friendId) {
-        return userService.showCommonFriends(userId, friendId).stream()
-                .map(id-> userService.findUserById(id))
+    public Set<User> findCommonFriends(@PathVariable long id,@PathVariable long otherId) {
+        log.info("GET /users/{}/friends/common найти общих друзей пользователя", id);
+        return userService.showCommonFriends(id, otherId).stream()
+                .map(userId -> userService.findUserById(userId))
                 .collect(Collectors.toSet());
     }
 
     @PostMapping
     @ResponseBody
     public User create(@RequestBody User user) {
-        log.info("вызван метод create");
+        log.info("POST /users создать пользователя");
         validator.validate(user);
         return userService.create(user);
     }
@@ -75,30 +68,20 @@ public class UserController {
     @PutMapping
     @ResponseBody
     public User update(@RequestBody User newUser) {
-        log.info("вызван метод update");
+        log.info("PUT /users обновить пользователя");
         return userService.update(newUser);
     }
 
-    @PutMapping("/{userId}/friends/{friendId}")
-    public void addFriend(@PathVariable long userId, long friendId) {
-        log.info("вызван метод addFriend");
-        userService.addFriend(userId, friendId);
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("PUT /users/{}/friends добавить в друзья пользователя", id);
+        userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping("{userId}/friends/{friendId}")
-    public void removeFriend(@PathVariable long userId, long friendId){
-        log.info("вызван метод removeFriend");
-        userService.removeFriend(userId, friendId);
+    @DeleteMapping("{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("PUT users/{}/friends/ удалить из друзей", id);
+        userService.removeFriend(id, friendId);
     }
-
-
-
-
-
-
-
-
-
-
 
 }

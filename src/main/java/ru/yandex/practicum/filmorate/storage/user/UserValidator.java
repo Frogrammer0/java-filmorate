@@ -28,15 +28,15 @@ public class UserValidator {
 
         if (!email.contains("@")) {
             log.error("почта введена в неверном формате");
-            throw new ValidationException("Неверный формат адреса почты");
+            throw new ValidationException("Неверный формат адреса почты: " + email);
         }
     }
 
     void validateLogin(String login) {
         log.info("валидация логина");
         if (login == null || login.isBlank() || login.contains(" ")) {
-            log.error("логин не введен");
-            throw new ValidationException("Логин не может быть пустым и не может содержать пробелы");
+            log.error("логин {} не введен или содержит пробелы", login);
+            throw new ValidationException("Логин не может быть пустым и не может содержать пробелы: " + login);
         }
     }
 
@@ -48,7 +48,7 @@ public class UserValidator {
             log.info("пользователю присвоен Birthday");
             if (birthday.isAfter(LocalDate.now())) {
                 log.error("неверная дата рождения");
-                throw new ValidationException("Дата рождения не может быть позже настоящего момента");
+                throw new ValidationException("Дата рождения не может быть позже настоящего момента: " + birthday);
             }
         }
     }
@@ -60,6 +60,8 @@ public class UserValidator {
             log.info("логин установлен в качестве имени пользователя");
         }
     }
+
+
 
 
 }

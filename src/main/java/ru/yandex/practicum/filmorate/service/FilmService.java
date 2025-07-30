@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
@@ -10,7 +11,7 @@ import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,25 +20,29 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
 
-
+    @Autowired
     public FilmService(FilmStorage filmStorage, UserStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
 
     public Collection<Film> findAll() {
+        log.info("поиск всех фильмов");
         return filmStorage.findAll();
     }
 
     public Film findFilmById(Long id) {
+        log.info("поиск фильма по id");
         return filmStorage.findFilmById(id);
     }
 
     public Film create(Film film) {
+        log.info("создание фильма");
         return filmStorage.create(film);
     }
 
-    public Film update(Film newFilm){
+    public Film update(Film newFilm) {
+        log.info("обновление фильма");
         return filmStorage.update(newFilm);
     }
 
@@ -59,12 +64,11 @@ public class FilmService {
         film.getLikes().remove(userId);
     }
 
-    public Set<Long> getTopFilm(long count) {
+    public List<Film> getTopFilm(long count) {
         log.info("запрошен топ 10 фильмов");
         return filmStorage.findAll().stream()
                 .sorted(Comparator.comparingLong((Film f) -> f.getLikes().size()).reversed())
                 .limit(count)
-                .map(Film::getId)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 }

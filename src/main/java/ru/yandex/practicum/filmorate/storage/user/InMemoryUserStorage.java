@@ -21,14 +21,13 @@ public class InMemoryUserStorage implements UserStorage {
         return users.values();
     }
 
-
     public User create(User user) {
         boolean isMailExist = users.values()
                 .stream()
                 .map(User::getEmail)
                 .anyMatch(mail -> mail.equals(user.getEmail()));
         if (isMailExist) {
-            log.error("введен уже использующийся имейл");
+            log.error("введен уже использующийся имейл: {}", user.getEmail());
             throw new DuplicatedDataException("Этот имейл уже используется");
         }
 
@@ -83,7 +82,7 @@ public class InMemoryUserStorage implements UserStorage {
 
 
     // вспомогательный метод для генерации идентификатора нового пользователя
-    private long getNextId() {
+    private Long getNextId() {
         log.info("создан id");
         long currentMaxId = users.keySet()
                 .stream()
@@ -93,7 +92,16 @@ public class InMemoryUserStorage implements UserStorage {
         return ++currentMaxId;
     }
 
-    public User findUserById(long id){
+
+
+    public User findUserById(Long id) {
+        if (!isUserExist(id)) {
+            throw new NotFoundException("Пользователь с id = " + id + "не найдем");
+        }
         return users.get(id);
+    }
+
+    private boolean isUserExist(Long id) {
+        return users.containsKey(id);
     }
 }
