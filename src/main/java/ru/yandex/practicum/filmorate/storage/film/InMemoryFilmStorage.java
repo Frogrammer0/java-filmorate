@@ -2,13 +2,10 @@ package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -21,15 +18,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     public Film create(Film film) {
-        // проверяем выполнение необходимых условий
-        boolean isFilmExist = films.values()
-                .stream()
-                .map(Film::getName)
-                .anyMatch(f -> f.equals(film.getName()));
-        if (isFilmExist) {
-            log.error("добавлен существующий фильм");
-            throw new DuplicatedDataException("Этот фильм уже добавлен");
-        }
 
         // формируем дополнительные данные
         film.setId(getNextId());
@@ -41,15 +29,10 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    public Film update(Film newFilm) {
+    public Optional<Film> update(Film newFilm) {
         // проверяем необходимые условия
-        if (newFilm.getId() == 0) {
-            log.error("не указан id фильма");
-            throw new ValidationException("Id должен быть указан");
-        }
+        Film oldFilm = films.get(newFilm.getId());
         if (films.containsKey(newFilm.getId())) {
-            Film oldFilm = films.get(newFilm.getId());
-
             // если фильм найден и все условия соблюдены, обновляем его содержимое
             if (newFilm.getName() != null) {
                 validator.validateName(newFilm.getName());
@@ -71,23 +54,34 @@ public class InMemoryFilmStorage implements FilmStorage {
                 oldFilm.setReleaseDate(newFilm.getReleaseDate());
                 log.info("изменена дата релиза фильма");
             }
-            return oldFilm;
-        }
 
-        log.error("не найден фильм с указанным id");
-        throw new NotFoundException("Фильм с id = " + newFilm.getId() + " не найден");
+        }
+        return Optional.ofNullable(oldFilm);
     }
 
 
-    public Film findFilmById(Long id) {
-        if (!ifFilmExist(id)) {
-            throw new NotFoundException("фильм с id" + id + "не найден");
-        }
-        return films.get(id);
+    public Optional<Film> findFilmById(Long id) {
+        return Optional.ofNullable(films.get(id));
     }
 
-    private boolean ifFilmExist(Long id) {
+    public boolean isFilmExist(Long id) {
         return films.containsKey(id);
+    }
+
+
+    public boolean isFilmExist(String name) {
+        return films.values()
+               .stream()
+               .map(Film::getName)
+               .anyMatch(f -> f.equals(name));
+    }
+
+    public List<Film> getTopFilm(long count) {
+
+        return findAll().stream()
+                .sorted(Comparator.comparingLong((Film f) -> f.getLikes().size()).reversed())
+                .limit(count)
+                .collect(Collectors.toList());
     }
 
 

@@ -117,7 +117,7 @@ public class FilmControllerTest {
 
 
         DuplicatedDataException ex = assertThrows(DuplicatedDataException.class, () -> controller.create(dFilm));
-        assertEquals("Этот фильм уже добавлен", ex.getMessage());
+        assertEquals("Фильм с таким названием уже добавлен", ex.getMessage());
     }
 
     @Test
@@ -130,6 +130,6 @@ public class FilmControllerTest {
         film.setId(99L);
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(film));
-        assertTrue(ex.getMessage().contains("Фильм с id = " + film.getId() + " не найден"));
+        assertTrue(ex.getMessage().contains("не удалось обновить фильм " + film.getName()));
     }
 }

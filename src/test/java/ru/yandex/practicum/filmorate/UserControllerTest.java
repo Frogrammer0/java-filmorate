@@ -126,7 +126,7 @@ public class UserControllerTest {
         user.setBirthday(LocalDate.parse("2000-01-01"));
 
         NotFoundException ex = assertThrows(NotFoundException.class, () -> controller.update(user));
-        assertTrue(ex.getMessage().contains("не найден"));
+        assertTrue(ex.getMessage().contains("не удалось обновить пользователя " + user.getLogin()));
     }
 
 

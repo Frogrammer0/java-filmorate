@@ -1,15 +1,13 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.film.FilmValidator;
-
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
-
 
 @Slf4j
 @RestController
@@ -31,9 +29,9 @@ public class FilmController {
 
     @GetMapping("/{filmId}")
     @ResponseBody
-    public Optional<Film> findFilmById(@PathVariable Long filmId) {
+    public Film findFilmById(@PathVariable Long filmId) {
         log.info("GET /films/{filmId} - получить фильм по id");
-        return Optional.ofNullable(filmService.findFilmById(filmId));
+        return filmService.findFilmById(filmId);
     }
 
     @GetMapping("/popular")
@@ -60,15 +58,17 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
         log.info("PUT /films/{}/like/ добавить лайк", id);
         filmService.addLike(userId, id);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable long id,@PathVariable long userId) {
+    public ResponseEntity<Void> deleteLike(@PathVariable long id,@PathVariable long userId) {
         log.info("DELETE /films/{}/like удалить лайк", id);
         filmService.deleteLike(userId, id);
+        return ResponseEntity.ok().build();
     }
 
 }
