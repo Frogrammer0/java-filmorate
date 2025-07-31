@@ -34,9 +34,7 @@ public class FilmService {
 
     public Film findFilmById(Long id) {
         log.info("поиск фильма по id");
-        return filmStorage.findFilmById(id).orElseThrow(
-                () -> new NotFoundException("фильм с " + id + " не найден")
-        );
+        return getFilmOrThrow(id);
     }
 
     public Film create(Film film) {
@@ -63,12 +61,8 @@ public class FilmService {
 
     public void addLike(Long userId, Long filmId) {
         log.info("пользователь с id = {} поставил лайк фильму с id = {}", userId, filmId);
-        User user = userStorage.findUserById(userId).orElseThrow(
-                () -> new NotFoundException("Пользователь с id =" + userId + " не найдем")
-        );
-        Film film = filmStorage.findFilmById(filmId).orElseThrow(
-                () -> new NotFoundException("фильм с id " + filmId + " не найден")
-        );
+        User user = getUserOrThrow(userId);
+        Film film = getFilmOrThrow(filmId);
 
         user.getLikes().add(filmId);
         film.getLikes().add(userId);
@@ -76,12 +70,8 @@ public class FilmService {
 
     public void deleteLike(Long userId, Long filmId) {
         log.info("пользователь с id = {} удалил лайк у фильма с id = {}", userId, filmId);
-        User user = userStorage.findUserById(userId).orElseThrow(
-                () -> new NotFoundException("Пользователь с id =" + userId + " не найдем")
-        );
-        Film film = filmStorage.findFilmById(filmId).orElseThrow(
-                () -> new NotFoundException("фильм с id " + filmId + " не найден")
-        );
+        User user = getUserOrThrow(userId);
+        Film film = getFilmOrThrow(filmId);
 
         user.getLikes().remove(filmId);
         film.getLikes().remove(userId);
@@ -93,5 +83,17 @@ public class FilmService {
             throw new ValidationException("диапазон топ-подборки должен быть больше нуля");
         }
         return filmStorage.getTopFilm(count);
+    }
+
+    private Film getFilmOrThrow(long id) {
+        return filmStorage.findFilmById(id).orElseThrow(
+                () -> new NotFoundException("фильм с " + id + " не найден")
+        );
+    }
+
+    private User getUserOrThrow(long id) {
+        return userStorage.findUserById(id).orElseThrow(
+                () -> new NotFoundException("Пользователь с id =" + id + " не найдем")
+        );
     }
 }
