@@ -16,5 +16,5 @@ public class User {
     Long id;
     Set<Long> friends = new HashSet<>();
     Set<Long> likes = new HashSet<>();
-
+    FriendshipStatus status;
 }

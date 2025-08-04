@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
 import java.time.LocalDate;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,4 +14,6 @@ public class Film {
     Long duration;
     LocalDate releaseDate;
     Set<Long> likes = new HashSet<>();
+    Set<Genre> genre;
+    Rating rating;
 }
