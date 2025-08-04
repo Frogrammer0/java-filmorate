@@ -14,6 +14,6 @@ public class Film {
     Long duration;
     LocalDate releaseDate;
     Set<Long> likes = new HashSet<>();
-    Set<Genre> genre;
+    EnumSet<Genre> genres;
     Rating rating;
 }
