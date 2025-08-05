@@ -1,149 +1,86 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-
-import java.time.LocalDate;
+import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.storage.user.UserValidator;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Set;
+
+
 
 @Slf4j
 @RestController
 @RequestMapping("/users")
 public class UserController {
+    UserService userService;
+    UserValidator validator;
+    FilmService filmService;
 
-    private final Map<Long, User> users = new HashMap<>();
+    public UserController(UserService userService, UserValidator validator, FilmService filmService) {
+        this.userService = userService;
+        this.validator =  validator;
+        this.filmService = filmService;
+    }
 
     @GetMapping
+    @ResponseBody
     public Collection<User> findAll() {
-        return users.values();
+        log.info("GET /users найти всех пользователей");
+        return userService.findAll();
+    }
+
+    @GetMapping("/{userId}")
+    @ResponseBody
+    public User findById(@PathVariable long userId) {
+        log.info("GET /users/{userId} найти пользователя по id");
+        return userService.findUserById(userId);
+    }
+
+    @GetMapping("/{id}/friends")
+    @ResponseBody
+    public Set<User> findFriendsByUser(@PathVariable long id) {
+        log.info("GET /users/{}/friends найти друзей пользователя", id);
+        return userService.findFriendsByUser(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    @ResponseBody
+    public Set<User> findCommonFriends(@PathVariable long id,@PathVariable long otherId) {
+        log.info("GET /users/{}/friends/common найти общих друзей пользователя", id);
+        return userService.showCommonFriends(id, otherId);
     }
 
     @PostMapping
+    @ResponseBody
     public User create(@RequestBody User user) {
-        // проверяем выполнение необходимых условий
-        log.info("вызван метод create");
-
-        validateEmail(user.getEmail());
-        validateLogin(user.getLogin());
-        validateName(user);
-        validateBirthday(user.getBirthday());
-
-
-        boolean isMailExist = users.values()
-                .stream()
-                .map(User::getEmail)
-                .anyMatch(mail -> mail.equals(user.getEmail()));
-        if (isMailExist) {
-            log.error("введен уже использующийся имейл");
-            throw new DuplicatedDataException("Этот имейл уже используется");
-        }
-
-        // формируем дополнительные данные
-        user.setId(getNextId());
-        log.info("пользователю присвоен id");
-
-
-        // сохраняем нового пользователя в памяти приложения
-        users.put(user.getId(), user);
-        log.info("пользователь добавлен в базу");
-        return user;
+        log.info("POST /users создать пользователя");
+        validator.validate(user);
+        return userService.create(user);
     }
 
     @PutMapping
+    @ResponseBody
     public User update(@RequestBody User newUser) {
-        log.info("вызван метод update");
-        // проверяем необходимые условия
-        if (newUser.getId() == 0) {
-            log.error("введен id равный 0");
-            throw new ValidationException("Id должен быть указан");
-        }
-        if (users.containsKey(newUser.getId())) {
-            User oldUser = users.get(newUser.getId());
-
-            // если пользователь найден и все условия соблюдены, обновляем его содержимое
-            if (newUser.getName() != null) {
-                validateName(newUser);
-                oldUser.setName(newUser.getName());
-                log.info("изменено имя пользователя");
-            }
-            if (newUser.getLogin() != null) {
-                validateLogin(newUser.getLogin());
-                oldUser.setLogin(newUser.getLogin());
-                log.info("изменен логин пользователя");
-            }
-            if (newUser.getEmail() != null) {
-                validateEmail(newUser.getEmail());
-                oldUser.setEmail(newUser.getEmail());
-                log.info("изменена почта пользователя");
-            }
-            if (newUser.getBirthday() != null) {
-                validateBirthday(newUser.getBirthday());
-                oldUser.setBirthday(newUser.getBirthday());
-                log.info("изменена дата рождения пользователя");
-            }
-
-            return oldUser;
-        }
-        log.error("пользователь с введенным id не найден");
-        throw new NotFoundException("Пользователь с id = " + newUser.getId() + " не найден");
+        log.info("PUT /users обновить пользователя");
+        return userService.update(newUser);
     }
 
-    // вспомогательный метод для генерации идентификатора нового пользователя
-    private long getNextId() {
-        log.info("создан id");
-        long currentMaxId = users.keySet()
-                .stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++currentMaxId;
+    @PutMapping("/{id}/friends/{friendId}")
+    public ResponseEntity<Void> addFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("PUT /users/{}/friends добавить в друзья пользователя", id);
+        userService.addFriend(id, friendId);
+        return ResponseEntity.ok().build();
     }
 
-    private void validateEmail(String email) {
-        log.info("валидация почты");
-        if (email == null || email.isBlank()) {
-            log.error("Не указана почта");
-            throw new ValidationException("Имейл должен быть указан");
-        }
-
-        if (!email.contains("@")) {
-            log.error("почта введена в неверном формате");
-            throw new ValidationException("Неверный формат адреса почты");
-        }
+    @DeleteMapping("{id}/friends/{friendId}")
+    public ResponseEntity<Void> removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        log.info("PUT users/{}/friends/ удалить из друзей", id);
+        userService.removeFriend(id, friendId);
+        return ResponseEntity.ok().build();
     }
 
-    private void validateLogin(String login) {
-        log.info("валидация логина");
-        if (login == null || login.isBlank() || login.contains(" ")) {
-            log.error("логин не введен");
-            throw new ValidationException("Логин не может быть пустым и не может содержать пробелы");
-        }
-    }
-
-    private void validateBirthday(LocalDate birthday) {
-        log.info("валидация даты рождения");
-        if (birthday == null) {
-            throw new ValidationException("дата рождения не указана");
-        } else {
-            log.info("пользователю присвоен Birthday");
-            if (birthday.isAfter(LocalDate.now())) {
-                log.error("неверная дата рождения");
-                throw new ValidationException("Дата рождения не может быть позже настоящего момента");
-            }
-        }
-    }
-
-    private void validateName(User user) {
-        log.info("валидация имени");
-        if (user.getName() == null || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.info("логин установлен в качестве имени пользователя");
-        }
-    }
 }
