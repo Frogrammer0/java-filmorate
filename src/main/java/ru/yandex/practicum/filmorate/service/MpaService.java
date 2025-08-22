@@ -20,7 +20,7 @@ private final MpaStorage mpaStorage;
     this.mpaStorage = mpaStorage;
 }
 
-public List<Mpa> findAll(){
+public List<Mpa> findAll() {
     return mpaStorage.findAll();
 }
 
