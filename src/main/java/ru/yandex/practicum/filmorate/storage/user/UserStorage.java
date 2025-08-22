@@ -13,9 +13,15 @@ public interface UserStorage {
 
     Collection<User> findAll();
 
-    Optional<User> findUserById(Long id);
+    Optional<User> findUserById(Integer id);
+
+    void removeFriendship(Integer userId, Integer friendId);
 
     boolean isMailExist(String mail);
 
-    boolean isUserExist(Long id);
+    boolean isUserExist(Integer id);
+
+    void addFriendship(Integer userId, Integer friendId);
+
+    void addLike(Integer filmId, Integer userId);
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage.film;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -10,7 +11,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
     private final FilmValidator validator = new FilmValidator();
 
     public Collection<Film> findAll() {
@@ -29,7 +30,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    public Optional<Film> update(Film newFilm) {
+    public Film update(Film newFilm) {
         // проверяем необходимые условия
         Film oldFilm = films.get(newFilm.getId());
         if (films.containsKey(newFilm.getId())) {
@@ -56,15 +57,20 @@ public class InMemoryFilmStorage implements FilmStorage {
             }
 
         }
-        return Optional.ofNullable(oldFilm);
+        return oldFilm;
     }
 
 
-    public Optional<Film> findFilmById(Long id) {
-        return Optional.ofNullable(films.get(id));
+    public Film findFilmById(Integer id) {
+        return films.get(id);
     }
 
-    public boolean isFilmExist(Long id) {
+    @Override
+    public void addLike(Integer filmId, Integer userId) {
+        films.get(filmId).getLikes().add(userId);
+    }
+
+    public boolean isFilmExist(Integer id) {
         return films.containsKey(id);
     }
 
@@ -74,6 +80,11 @@ public class InMemoryFilmStorage implements FilmStorage {
                .stream()
                .map(Film::getName)
                .anyMatch(f -> f.equals(name));
+    }
+
+    @Override
+    public void removeLike(Integer filmId, Integer userId) {
+        films.get(filmId).getLikes().remove(userId);
     }
 
     public List<Film> getTopFilm(long count) {
@@ -86,11 +97,11 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
     // вспомогательный метод для генерации идентификатора нового пользователя
-    private long getNextId() {
+    private Integer getNextId() {
         log.info("вызван метод создания id");
-        long currentMaxId = films.keySet()
+        int currentMaxId = films.keySet()
                 .stream()
-                .mapToLong(id -> id)
+                .mapToInt(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;

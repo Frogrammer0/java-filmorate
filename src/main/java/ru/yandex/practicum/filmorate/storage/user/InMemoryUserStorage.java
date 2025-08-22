@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -11,8 +12,9 @@ import java.util.Optional;
 
 @Slf4j
 @Component
+@Qualifier("m")
 public class InMemoryUserStorage implements UserStorage {
-    private final Map<Long, User> users = new HashMap<>();
+    private final Map<Integer, User> users = new HashMap<>();
     private final UserValidator validator = new UserValidator();
 
     public Collection<User> findAll() {
@@ -58,28 +60,54 @@ public class InMemoryUserStorage implements UserStorage {
                 oldUser.setBirthday(newUser.getBirthday());
                 log.info("изменена дата рождения пользователя");
             }
+
+            if (newUser.getFriends() != null) {
+                oldUser.setFriends(newUser.getFriends());
+                log.info("обновлены друзья пользователя");
+            }
+
+            if (newUser.getLikes() != null) {
+                oldUser.setLikes(newUser.getLikes());
+                log.info("обновлены лайки пользователя");
+            }
+
+
         }
         return Optional.ofNullable(oldUser);
     }
 
+    @Override
+    public void addFriendship(Integer userId, Integer friendId) {
+        users.get(userId).getFriends().add(friendId);
+    }
+
+    public void addLike(Integer filmId, Integer userId) {
+      users.get(userId).getLikes().add(filmId);
+    }
+
 
     // вспомогательный метод для генерации идентификатора нового пользователя
-    private Long getNextId() {
+    private Integer getNextId() {
         log.info("создан id");
-        long currentMaxId = users.keySet()
+        int currentMaxId = users.keySet()
                 .stream()
-                .mapToLong(id -> id)
+                .mapToInt(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;
     }
 
 
-    public Optional<User> findUserById(Long id) {
+    public Optional<User> findUserById(Integer id) {
         return Optional.ofNullable(users.get(id));
     }
 
-    public boolean isUserExist(Long id) {
+    @Override
+    public void removeFriendship(Integer userId, Integer friendId) {
+        users.get(userId).getFriends().remove(friendId);
+    }
+
+    public boolean isUserExist(Integer id) {
         return users.containsKey(id);
     }
 

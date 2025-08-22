@@ -35,21 +35,21 @@ public class UserController {
 
     @GetMapping("/{userId}")
     @ResponseBody
-    public User findById(@PathVariable long userId) {
+    public User findById(@PathVariable int userId) {
         log.info("GET /users/{userId} найти пользователя по id");
         return userService.findUserById(userId);
     }
 
     @GetMapping("/{id}/friends")
     @ResponseBody
-    public Set<User> findFriendsByUser(@PathVariable long id) {
+    public Set<User> findFriendsByUser(@PathVariable int id) {
         log.info("GET /users/{}/friends найти друзей пользователя", id);
         return userService.findFriendsByUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseBody
-    public Set<User> findCommonFriends(@PathVariable long id,@PathVariable long otherId) {
+    public Set<User> findCommonFriends(@PathVariable int id,@PathVariable int otherId) {
         log.info("GET /users/{}/friends/common найти общих друзей пользователя", id);
         return userService.showCommonFriends(id, otherId);
     }
@@ -70,15 +70,15 @@ public class UserController {
     }
 
     @PutMapping("/{id}/friends/{friendId}")
-    public ResponseEntity<Void> addFriend(@PathVariable long id, @PathVariable long friendId) {
+    public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
         log.info("PUT /users/{}/friends добавить в друзья пользователя", id);
         userService.addFriend(id, friendId);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("{id}/friends/{friendId}")
-    public ResponseEntity<Void> removeFriend(@PathVariable long id, @PathVariable long friendId) {
-        log.info("PUT users/{}/friends/ удалить из друзей", id);
+    public ResponseEntity<Void> removeFriend(@PathVariable int id, @PathVariable int friendId) {
+        log.info("DELETE /users/{}/friends/ удалить из друзей", id);
         userService.removeFriend(id, friendId);
         return ResponseEntity.ok().build();
     }
