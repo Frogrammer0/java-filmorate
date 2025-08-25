@@ -11,6 +11,7 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
@@ -23,14 +24,17 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
 
 
     @Autowired
-    public FilmService(@Qualifier("db") FilmStorage filmStorage, @Qualifier("db") UserStorage userStorage,@Qualifier("db") MpaStorage mpaStorage) {
+    public FilmService(@Qualifier("db") FilmStorage filmStorage, @Qualifier("db") UserStorage userStorage, @Qualifier("db") MpaStorage mpaStorage,
+                       @Qualifier("db") GenreStorage genreStorage) {
 
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.mpaStorage = mpaStorage;
+        this.genreStorage = genreStorage;
     }
 
     public Collection<Film> findAll() {
@@ -45,12 +49,19 @@ public class FilmService {
 
     public Film create(Film film) {
         log.info("создание фильма в filmService = {}", film);
-
-        if (filmStorage.isFilmExist(film.getId())) {
-            log.error("добавлен существующий фильм");
+        if (film.getId() != null && filmStorage.isFilmExist(film.getId())) {
+            log.error("добавлен существующий фильм с существующим id");
             throw new DuplicatedDataException("Фильм с таким id уже добавлен");
         }
-        return filmStorage.create(film);
+        if (!film.getGenres().isEmpty()) {
+            genreStorage.validateGenre(film.getGenres().get(0).getId());
+        }
+        mpaStorage.validateMpa(film.getMpa().getId());
+
+        Film createdFilm = filmStorage.create(film);
+        genreStorage.saveFilmGenres(film);
+
+        return createdFilm;
     }
 
     public Film update(Film newFilm) {
@@ -60,36 +71,25 @@ public class FilmService {
             log.error("не указан id фильма");
             throw new ValidationException("Id должен быть указан");
         }
+
+        if (!newFilm.getGenres().isEmpty()) {
+            genreStorage.validateGenre(newFilm.getGenres().get(0).getId());
+        }
+        if (newFilm.getMpa() != null) {
+            mpaStorage.validateMpa(newFilm.getMpa().getId());
+        }
         return filmStorage.update(newFilm);
     }
 
     public void addLike(Integer userId, Integer filmId) {
         log.info("пользователь с id = {} поставил лайк фильму с id = {}", userId, filmId);
-        User user = getUserOrThrow(userId);
-        Film film = filmStorage.findFilmById(filmId);
-
-        user.getLikes().add(filmId);
-        film.getLikes().add(userId);
-        userStorage.addLike(filmId, userId);
         filmStorage.addLike(filmId, userId);
-
-
-        filmStorage.update(film);
-        userStorage.update(user);
     }
 
     public void deleteLike(Integer userId, Integer filmId) {
         log.info("пользователь с id = {} удалил лайк у фильма с id = {}", userId, filmId);
-        User user = getUserOrThrow(userId);
-        Film film = filmStorage.findFilmById(filmId);
-
-        user.getLikes().remove(filmId);
-        film.getLikes().remove(userId);
 
         filmStorage.removeLike(filmId, userId);
-
-        filmStorage.update(film);
-        userStorage.update(user);
     }
 
     public List<Film> getTopFilm(long count) {

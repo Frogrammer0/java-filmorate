@@ -4,11 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.user.UserValidator;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 
 
@@ -18,12 +17,10 @@ import java.util.Set;
 public class UserController {
     UserService userService;
     UserValidator validator;
-    FilmService filmService;
 
-    public UserController(UserService userService, UserValidator validator, FilmService filmService) {
+    public UserController(UserService userService, UserValidator validator) {
         this.userService = userService;
         this.validator =  validator;
-        this.filmService = filmService;
     }
 
     @GetMapping
@@ -42,14 +39,14 @@ public class UserController {
 
     @GetMapping("/{id}/friends")
     @ResponseBody
-    public Set<User> findFriendsByUser(@PathVariable int id) {
+    public List<User> findFriendsByUser(@PathVariable int id) {
         log.info("GET /users/{}/friends найти друзей пользователя", id);
         return userService.findFriendsByUser(id);
     }
 
     @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseBody
-    public Set<User> findCommonFriends(@PathVariable int id,@PathVariable int otherId) {
+    public List<User> findCommonFriends(@PathVariable int id, @PathVariable int otherId) {
         log.info("GET /users/{}/friends/common найти общих друзей пользователя", id);
         return userService.showCommonFriends(id, otherId);
     }
@@ -71,7 +68,7 @@ public class UserController {
 
     @PutMapping("/{id}/friends/{friendId}")
     public ResponseEntity<Void> addFriend(@PathVariable int id, @PathVariable int friendId) {
-        log.info("PUT /users/{}/friends добавить в друзья пользователя", id);
+        log.info("PUT /users/{}/friends добавить в друзья пользователя с id = {}", id, friendId);
         userService.addFriend(id, friendId);
         return ResponseEntity.ok().build();
     }

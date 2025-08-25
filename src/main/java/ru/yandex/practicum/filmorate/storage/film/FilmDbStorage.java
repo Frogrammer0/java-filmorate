@@ -65,25 +65,10 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             WHERE id = ?
             """;
 
-    private static final String INSERT_FILM_GENRE_QUERY = """
-            INSERT INTO film_genres(film_id, genre_id)
-            VALUES (?, ?)
-            """;
-
-    private static final String INSERT_GENRE_QUERY = """
-            MERGE INTO genre(name)
-            KEY (name)
-            VALUES (?)
-            """;
-
-    private static final String DELETE_GENRES_QUERY = """
-            DELETE FROM film_genres WHERE film_id = ?
-            """;
-
-    private static final String INSERT_MPA_QUERY = """
-            MERGE INTO mpa(id, name)
-            KEY (id)
-            VALUES (?, ?)
+    private static final String UPDATE_FILM_WITHOUT_MPA_QUERY = """
+            UPDATE films
+            SET name = ?, description = ?, duration = ?, release_date = ?
+            WHERE id = ?
             """;
 
     private static final String INSERT_LIKE_QUERY = """
@@ -92,20 +77,12 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
             VALUES (?, ?)
             """;
 
-    private static final String FIND_MPA_NAME_BY_ID_QUERY = """
-            SELECT name
-            FROM mpa
-            WHERE id = ?
-            """;
-
     private static final String REMOVE_LIKE_QUERY = """
             DELETE FROM film_likes
             WHERE film_id = ?
             AND user_id = ?;
             """;
 
-    private static final Integer maxMpaSize = 6;
-    private static final Integer maxGenreSize = 6;
     public Map<Integer, Film> films = new HashMap<>();
 
 
@@ -120,17 +97,6 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
     @Override
     public Film findFilmById(Integer id) {
-/*        findMany(FIND_BY_ID_QUERY, id)
-                .forEach(f -> {
-                            if (films.containsKey(id)) {
-                                films.get(id).getGenres().add(f.getGenres().stream().findFirst().orElseThrow());
-                            } else {
-                                films.put(f.getId(), f);
-                            }
-                        }
-                );
-
-        return films.get(id);*/
 
         List<Film> filmsFromDb = findMany(FIND_BY_ID_QUERY, id);
 
@@ -140,7 +106,6 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
 
         Film film = filmsFromDb.get(0);
 
-        // Сбор всех жанров, если они есть
         Set<Genre> genres = new HashSet<>();
         for (Film f : filmsFromDb) {
             if (f.getGenres() != null) {
@@ -156,8 +121,6 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public Film create(Film film) {
         log.info("запущен метод create фильм в DB");
-        validateMpa(film.getMpa().getId());
-        validateGenre(film.getGenres());
         Integer id = insert(
                 INSERT_FILM_QUERY,
                 film.getName(),
@@ -167,7 +130,6 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
                 film.getReleaseDate()
         );
         film.setId(id);
-        saveFilmGenres(film);
         log.info("в БД создан фильм = {}", film);
 
         return film;
@@ -176,76 +138,28 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     @Override
     public Film update(Film film) {
         if (film.getMpa() != null) {
-            validateMpa(film.getMpa().getId());
+            update(
+                    UPDATE_FILM_QUERY,
+                    film.getName(),
+                    film.getDescription(),
+                    film.getDuration(),
+                    film.getMpa().getId(),
+                    film.getReleaseDate(),
+                    film.getId()
+            );
+        } else {
+            update(
+                    UPDATE_FILM_WITHOUT_MPA_QUERY,
+                    film.getName(),
+                    film.getDescription(),
+                    film.getDuration(),
+                    film.getReleaseDate(),
+                    film.getId()
+            );
         }
-        if (!film.getGenres().isEmpty()) {
-            validateGenre(film.getGenres());
-        }
-        update(
-                UPDATE_FILM_QUERY,
-                film.getName(),
-                film.getDescription(),
-                film.getDuration(),
-                film.getMpa().getId(),
-                film.getReleaseDate(),
-                film.getId()
-        );
         log.info("обновили в БД film = {}", film);
         return findFilmById(film.getId());
     }
-
-    private void saveGenre(Film film) {
-        log.info("запущен метод saveGenres в DB");
-
-        if (!film.getGenres().isEmpty()) {
-            film.getGenres().forEach(g -> {
-                        if (film.getGenres().stream()
-                                .mapToInt(Genre::getId)
-                                .max()
-                                .orElse(0) > 20) {
-                            throw new NotFoundException("добавляемый жанр не существует");
-                        }
-                        update(INSERT_GENRE_QUERY, g.getName());
-                    }
-            );
-        }
-    }
-
-    private void saveFilmGenres(Film film) {
-        log.info("запущен метод saveFilmGenres в DB");
-        if (!film.getGenres().isEmpty()) {
-            film.getGenres().stream().distinct().forEach(genre -> {
-                if (genre != null) {
-                    update(INSERT_FILM_GENRE_QUERY, film.getId(), genre.getId());
-                }
-            });
-        }
-    }
-
-    private void updateGenres(Film film) {
-        update(DELETE_GENRES_QUERY, film.getId());
-        saveFilmGenres(film);
-    }
-
-    private void validateMpa(Integer id) {
-        log.info("запущен метод validateMpa в DB");
-        if (id > maxMpaSize) {
-            throw new NotFoundException("добавляемый рейтинг не существует");
-        }
-    }
-
-    private void validateGenre(List<Genre> genres) {
-        log.info("запущен метод validateGenre в DB");
-        if (!genres.isEmpty()) {
-            genres.stream().forEach(f -> {
-                if (f.getId() > maxGenreSize) {
-                    throw new NotFoundException("добавляемый жанр не существует");
-                }
-            });
-        }
-
-    }
-
 
     @Override
     public void addLike(Integer filmId, Integer userId) {

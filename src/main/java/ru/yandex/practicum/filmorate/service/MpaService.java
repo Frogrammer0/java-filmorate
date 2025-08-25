@@ -13,22 +13,24 @@ import java.util.List;
 @Service
 @Slf4j
 public class MpaService {
-private final MpaStorage mpaStorage;
+    private final MpaStorage mpaStorage;
 
-@Autowired
-    public MpaService(@Qualifier("db")MpaStorage mpaStorage) {
-    this.mpaStorage = mpaStorage;
-}
+    @Autowired
+    public MpaService(@Qualifier("db") MpaStorage mpaStorage) {
+        this.mpaStorage = mpaStorage;
+    }
 
-public List<Mpa> findAll() {
-    return mpaStorage.findAll();
-}
+    public List<Mpa> findAll() {
+        log.info("запущен метод findAll в MpaService");
+        return mpaStorage.findAll();
+    }
 
-public Mpa findMpaById(Integer id) {
-    return mpaStorage.findById(id).orElseThrow(
-            () -> new NotFoundException("Рейтинг mpa c id = " + id + " не найден")
-    );
-}
+    public Mpa findMpaById(Integer id) {
+        log.info("запущен метод findMpaById (id = {}) в MpaService", id);
+        return mpaStorage.findById(id).orElseThrow(
+                () -> new NotFoundException("Рейтинг mpa c id = " + id + " не найден")
+        );
+    }
 
 
 }

@@ -5,10 +5,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -71,7 +69,6 @@ public class InMemoryUserStorage implements UserStorage {
                 log.info("обновлены лайки пользователя");
             }
 
-
         }
         return Optional.ofNullable(oldUser);
     }
@@ -79,6 +76,25 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public void addFriendship(Integer userId, Integer friendId) {
         users.get(userId).getFriends().add(friendId);
+    }
+
+    @Override
+    public List<User> findFriendsByUser(Integer id) {
+        User user = users.get(id);
+        return user.getFriends().stream()
+                .map(users::get)
+                .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<User> showCommonFriends(Integer userId, Integer friendId) {
+        User user = users.get(userId);
+        User friend = users.get(friendId);
+        return user.getFriends().stream()
+                .filter(id -> friend.getFriends().contains(id))
+                .map(users::get)
+                .collect(Collectors.toList());
     }
 
     public void addLike(Integer filmId, Integer userId) {

@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
 
@@ -42,13 +43,28 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
             + "VALUES(?,?,?,?)";
     private static final String UPDATE_QUERY = "UPDATE users SET login = ?, name = ?, email = ?, birthday = ? " +
             "WHERE id = ?";
-    private static final String INSERT_LIKE_QUERY = """
-            MERGE INTO film_likes(user_id, film_id)
-            KEY(user_id, film_id)
-            VALUES (?, ?)
+    private static final String FIND_FRIENDS_BY_USER = """
+            WITH base AS (
+            """ + FIND_BASE + """
+            )
+            SELECT b.*
+            FROM base b
+            JOIN friendship fr ON b.id = fr.friend_id
+            WHERE fr.user_id = ?;
             """;
-
-
+    private static final String FIND_COMMON_FRIENDS = """
+            WITH base AS (
+            """ + FIND_BASE + """
+                )
+            SELECT b.*
+            FROM base b
+            JOIN (
+                SELECT f1.friend_id
+                FROM friendship f1
+                JOIN friendship f2 ON f1.friend_id = f2.friend_id
+                WHERE f1.user_id = ? AND f2.user_id = ?
+            ) common ON b.id = common.friend_id;
+            """;
 
 
     public UserDbStorage(JdbcTemplate jdbc, RowMapper<User> mapper) {
@@ -93,35 +109,51 @@ public class UserDbStorage extends BaseStorage<User> implements UserStorage {
 
     @Override
     public void addFriendship(Integer userId, Integer friendId) {
+        if (!isUserExist(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+        if (!isUserExist(friendId)) {
+            throw new NotFoundException("Пользователь с id " + friendId + " не найден");
+        }
         String sql = "INSERT INTO friendship (user_id, friend_id) VALUES (?, ?)";
         update(sql, userId, friendId);
         log.info("Добавили дружбу между {} и {} в БД", userId, friendId);
     }
 
-    @Override
-    public void addLike(Integer filmId, Integer userId) {
-        update(INSERT_LIKE_QUERY, userId, filmId);
-        log.info("Пользователь с id = {} поставил лайк фильму с id = {} в UserDb", userId, filmId);
-    }
-
 
     @Override
     public void removeFriendship(Integer userId, Integer friendId) {
+        if (!isUserExist(userId)) {
+            throw new NotFoundException("Пользователь с id " + userId + " не найден");
+        }
+        if (!isUserExist(friendId)) {
+            throw new NotFoundException("Пользователь с id " + friendId + " не найден");
+        }
         String sql = "DELETE FROM friendship WHERE user_id = ? AND friend_id = ?";
-        update(sql, userId, friendId);
         log.info("Удалили дружбу между {} и {} из БД", userId, friendId);
+        delete(sql, userId, friendId);
     }
 
 
     @Override
     public boolean isMailExist(String mail) {
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM users WHERE email = ?", Integer.class, mail);
+        int count = jdbc.queryForObject("SELECT COUNT(*) FROM users WHERE email = ?", Integer.class, mail);
         return count > 0;
     }
 
     @Override
     public boolean isUserExist(Integer id) {
-        Integer count = jdbc.queryForObject("SELECT COUNT(*) FROM users WHERE id = ?", Integer.class, id);
+        int count = jdbc.queryForObject("SELECT COUNT(*) FROM users WHERE id = ?", Integer.class, id);
         return count > 0;
+    }
+
+    @Override
+    public List<User> findFriendsByUser(Integer id) {
+        return findMany(FIND_FRIENDS_BY_USER, id);
+    }
+
+    @Override
+    public List<User> showCommonFriends(Integer userId, Integer friendId) {
+        return findMany(FIND_COMMON_FRIENDS, userId, friendId);
     }
 }

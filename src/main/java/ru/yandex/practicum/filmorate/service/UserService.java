@@ -11,8 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 
 @Service
@@ -21,7 +20,7 @@ public class UserService {
     UserStorage userStorage;
 
     @Autowired
-    public UserService(@Qualifier("db")UserStorage userStorage) {
+    public UserService(@Qualifier("db") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -30,12 +29,10 @@ public class UserService {
         return userStorage.findAll();
     }
 
-    public Set<User> findFriendsByUser(Integer userId) {
-        User user  = getUserOrThrow(userId);
+    public List<User> findFriendsByUser(Integer userId) {
+        User user = getUserOrThrow(userId);
         log.info("друзья пользователя {} = {}", userId, user.getFriends());
-        return user.getFriends().stream()
-                .map(this::findUserById)
-                .collect(Collectors.toSet());
+        return userStorage.findFriendsByUser(userId);
     }
 
     public User findUserById(Integer userId) {
@@ -64,34 +61,18 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        user.getFriends().add(friendId);
-        userStorage.update(user);
         userStorage.addFriendship(userId, friendId);
         log.info("пользователь с id = {} добавлен в друзья пользователю с id = {}", friendId, userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        if (user.getFriends().contains(friendId)) {
-            user.getFriends().remove(friendId);
-            userStorage.update(user);
-            userStorage.removeFriendship(userId, friendId);
-            log.info("пользователь с id = {} удален у пользователя с id = {}", friendId, userId);
-        }
+        log.info("пользователь с id = {} удален у пользователя с id = {}", friendId, userId);
+        userStorage.removeFriendship(userId, friendId);
     }
 
-    public Set<User> showCommonFriends(Integer userId, Integer friendId) {
+    public List<User> showCommonFriends(Integer userId, Integer friendId) {
         log.info("показ общих друзей у пользователей с id {} и {}", userId, friendId);
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-
-        return user.getFriends().stream()
-                .filter(friend.getFriends()::contains)
-                .map(this::getUserOrThrow)
-                .collect(Collectors.toSet());
+        return userStorage.showCommonFriends(userId, friendId);
     }
 
     private User getUserOrThrow(Integer id) {

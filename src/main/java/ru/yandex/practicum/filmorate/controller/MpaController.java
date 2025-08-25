@@ -20,12 +20,14 @@ public class MpaController {
 
     @GetMapping
     public List<Mpa> findAll() {
+        log.info("запущен метод findAll в MpaController");
         return mpaService.findAll();
     }
 
     @GetMapping("/{id}")
     @ResponseBody
     public Mpa findMpaById(@PathVariable int id) {
+        log.info("запущен метод findMpaById (id = {}) в MpaController", id);
         return mpaService.findMpaById(id);
     }
 }

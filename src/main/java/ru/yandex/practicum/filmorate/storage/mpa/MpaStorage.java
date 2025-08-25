@@ -9,4 +9,7 @@ public interface MpaStorage {
     List<Mpa> findAll();
 
     Optional<Mpa> findById(int id);
+
+    void validateMpa(Integer id);
+
 }

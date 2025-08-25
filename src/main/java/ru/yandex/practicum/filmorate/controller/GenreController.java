@@ -19,12 +19,14 @@ public class GenreController {
 
     @GetMapping
     public List<Genre> findAll() {
+        log.info("запущен метод findAll в GenreController");
         return genreService.findAll();
     }
 
     @GetMapping("/{id}")
     @ResponseBody
     public Genre findGenreById(@PathVariable int id) {
+        log.info("запущен метод findGenreById (id = {}) в GenreController", id);
         return genreService.findGenreById(id);
     }
 }

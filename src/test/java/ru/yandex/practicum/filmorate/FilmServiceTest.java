@@ -15,7 +15,9 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.film.FilmDbStorage;
+import ru.yandex.practicum.filmorate.storage.genre.GenreDbStorage;
 import ru.yandex.practicum.filmorate.storage.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.storage.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.MpaRowMapper;
 import ru.yandex.practicum.filmorate.storage.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaDbStorage;
@@ -26,12 +28,14 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @JdbcTest
 @AutoConfigureTestDatabase
 @Import({FilmDbStorage.class, FilmRowMapper.class, FilmService.class,
         UserDbStorage.class, UserRowMapper.class, UserService.class,
-        MpaDbStorage.class, MpaRowMapper.class, })
+        MpaDbStorage.class, MpaRowMapper.class,
+        GenreDbStorage.class, GenreRowMapper.class})
 class FilmServiceTest {
 
     @Autowired
@@ -79,8 +83,9 @@ class FilmServiceTest {
         Film created = filmService.create(film1);
         film2.setId(created.getId());
 
-        assertThatThrownBy(() -> filmService.create(film2))
-                .isInstanceOf(DuplicatedDataException.class);
+
+        assertThrows(DuplicatedDataException.class,
+                () -> filmService.create(film2));
     }
 
     @Test
@@ -136,8 +141,8 @@ class FilmServiceTest {
 
     @Test
     void testGetTopFilmsValidation() {
-        assertThatThrownBy(() -> filmService.getTopFilm(0))
-                .isInstanceOf(ValidationException.class);
+        assertThrows(ValidationException.class,
+                () -> filmService.getTopFilm(0));
     }
 
     @Test
