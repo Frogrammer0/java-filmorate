@@ -61,16 +61,25 @@ public class UserService {
     }
 
     public void addFriend(Integer userId, Integer friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+
         userStorage.addFriendship(userId, friendId);
         log.info("пользователь с id = {} добавлен в друзья пользователю с id = {}", friendId, userId);
     }
 
     public void removeFriend(Integer userId, Integer friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+
         log.info("пользователь с id = {} удален у пользователя с id = {}", friendId, userId);
         userStorage.removeFriendship(userId, friendId);
     }
 
     public List<User> showCommonFriends(Integer userId, Integer friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+
         log.info("показ общих друзей у пользователей с id {} и {}", userId, friendId);
         return userStorage.showCommonFriends(userId, friendId);
     }

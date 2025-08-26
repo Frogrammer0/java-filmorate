@@ -82,13 +82,18 @@ public class FilmService {
     }
 
     public void addLike(Integer userId, Integer filmId) {
+        getUserOrThrow(userId);
+        filmStorage.findFilmById(filmId);
+
         log.info("пользователь с id = {} поставил лайк фильму с id = {}", userId, filmId);
         filmStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(Integer userId, Integer filmId) {
-        log.info("пользователь с id = {} удалил лайк у фильма с id = {}", userId, filmId);
+        getUserOrThrow(userId);
+        filmStorage.findFilmById(filmId);
 
+        log.info("пользователь с id = {} удалил лайк у фильма с id = {}", userId, filmId);
         filmStorage.removeLike(filmId, userId);
     }
 
@@ -106,4 +111,5 @@ public class FilmService {
                 () -> new NotFoundException("Пользователь с id =" + id + " не найдем")
         );
     }
+
 }
