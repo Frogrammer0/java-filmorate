@@ -29,7 +29,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         return film;
     }
 
-    public Film update(Film newFilm) {
+    public Optional<Film> update(Film newFilm) {
         // проверяем необходимые условия
         Film oldFilm = films.get(newFilm.getId());
         if (films.containsKey(newFilm.getId())) {
@@ -56,12 +56,12 @@ public class InMemoryFilmStorage implements FilmStorage {
             }
 
         }
-        return oldFilm;
+        return Optional.of(oldFilm);
     }
 
 
-    public Film findFilmById(Integer id) {
-        return films.get(id);
+    public Optional<Film> findFilmById(Integer id) {
+        return Optional.of(films.get(id));
     }
 
     @Override

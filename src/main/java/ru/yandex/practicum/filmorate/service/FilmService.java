@@ -15,8 +15,7 @@ import ru.yandex.practicum.filmorate.storage.genre.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.mpa.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Slf4j
@@ -44,7 +43,7 @@ public class FilmService {
 
     public Film findFilmById(Integer id) {
         log.info("поиск фильма по id");
-        return filmStorage.findFilmById(id);
+        return getFilmOrThrow(id);
     }
 
     public Film create(Film film) {
@@ -78,7 +77,9 @@ public class FilmService {
         if (newFilm.getMpa() != null) {
             mpaStorage.validateMpa(newFilm.getMpa().getId());
         }
-        return filmStorage.update(newFilm);
+        filmStorage.update(newFilm);
+
+        return getFilmOrThrow(newFilm.getId());
     }
 
     public void addLike(Integer userId, Integer filmId) {
@@ -111,5 +112,13 @@ public class FilmService {
                 () -> new NotFoundException("Пользователь с id =" + id + " не найдем")
         );
     }
+
+    private Film getFilmOrThrow(Integer id) {
+        return filmStorage.findFilmById(id).orElseThrow(
+                () -> new NotFoundException("Фильм с id=" + id + " не найден")
+        );
+
+    }
+
 
 }

@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.BaseStorage;
@@ -96,26 +95,13 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Film findFilmById(Integer id) {
-
-        List<Film> filmsFromDb = findMany(FIND_BY_ID_QUERY, id);
-
-        if (filmsFromDb.isEmpty()) {
-            throw new NotFoundException("Фильм с id=" + id + " не найден");
+    public Optional<Film> findFilmById(Integer id) {
+        List<Film> filmList = findMany(FIND_BY_ID_QUERY, id);
+        if (filmList.isEmpty()) {
+            return Optional.empty();
+        } else {
+            return Optional.of(buildFilm(filmList));
         }
-
-        Film film = filmsFromDb.get(0);
-
-        Set<Genre> genres = new HashSet<>();
-        for (Film f : filmsFromDb) {
-            if (f.getGenres() != null) {
-                genres.addAll(f.getGenres());
-            }
-        }
-        film.setGenres(new ArrayList<>(genres));
-
-        return film;
-
     }
 
     @Override
@@ -136,7 +122,7 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Film update(Film film) {
+    public Optional<Film> update(Film film) {
         if (film.getMpa() != null) {
             update(
                     UPDATE_FILM_QUERY,
@@ -190,6 +176,20 @@ public class FilmDbStorage extends BaseStorage<Film> implements FilmStorage {
         String sql = "SELECT COUNT(*) FROM films WHERE name = ?";
         Integer count = jdbc.queryForObject(sql, Integer.class, name);
         return count != null && count > 0;
+    }
+
+    private Film buildFilm(List<Film> filmList) {
+        Film film = filmList.get(0);
+
+        Set<Genre> genres = new HashSet<>();
+        for (Film f : filmList) {
+            if (f.getGenres() != null) {
+                genres.addAll(f.getGenres());
+            }
+        }
+        film.setGenres(new ArrayList<>(genres));
+
+        return film;
     }
 
 

@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.mappers.*;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -65,9 +66,13 @@ class FilmDbStorageTest {
 
         assertThat(saved.getId()).isNotNull();
 
-        Film fromDb = filmDbStorage.findFilmById(saved.getId());
-        assertThat(fromDb.getName()).isEqualTo("Фильм 1");
-        assertThat(fromDb.getMpa().getId()).isEqualTo(1);
+        Optional<Film> fromDb = filmDbStorage.findFilmById(saved.getId());
+        assertThat(fromDb)
+                .isPresent()
+                .hasValueSatisfying(f -> {
+                    assertThat(f.getName()).isEqualTo("Фильм 1");
+                    assertThat(f.getMpa().getId()).isEqualTo(1);
+                });
     }
 
     @Test
@@ -77,10 +82,14 @@ class FilmDbStorageTest {
 
         saved.setName("Обновленный фильм");
         saved.setDescription("Новое описание");
-        Film updated = filmDbStorage.update(saved);
+        Optional<Film> updated = filmDbStorage.update(saved);
 
-        assertThat(updated.getName()).isEqualTo("Обновленный фильм");
-        assertThat(updated.getDescription()).isEqualTo("Новое описание");
+        assertThat(updated)
+                .isPresent()
+                .hasValueSatisfying(f -> {
+                    assertThat(f.getName()).isEqualTo("Обновленный фильм");
+                    assertThat(f.getDescription()).isEqualTo("Новое описание");
+                });
     }
 
 
