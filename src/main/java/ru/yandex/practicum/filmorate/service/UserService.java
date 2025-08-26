@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -10,8 +11,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 
 import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 
 @Service
@@ -20,7 +20,7 @@ public class UserService {
     UserStorage userStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage) {
+    public UserService(@Qualifier("db") UserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
@@ -29,15 +29,13 @@ public class UserService {
         return userStorage.findAll();
     }
 
-    public Set<User> findFriendsByUser(Long userId) {
-        log.info("друзья пользователя {}", userId);
-        User user  = getUserOrThrow(userId);
-        return user.getFriends().stream()
-                .map(this::findUserById)
-                .collect(Collectors.toSet());
+    public List<User> findFriendsByUser(Integer userId) {
+        User user = getUserOrThrow(userId);
+        log.info("друзья пользователя {} = {}", userId, user.getFriends());
+        return userStorage.findFriendsByUser(userId);
     }
 
-    public User findUserById(Long userId) {
+    public User findUserById(Integer userId) {
         log.info("поиск пользователя по id");
         return getUserOrThrow(userId);
     }
@@ -62,35 +60,33 @@ public class UserService {
         );
     }
 
-    public void addFriend(Long userId, Long friendId) {
-        log.info("пользователь с id= {} добавлен в друзья пользователю с id= {}", userId, friendId);
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        user.getFriends().add(friendId);
-        friend.getFriends().add(userId);
+    public void addFriend(Integer userId, Integer friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+
+        userStorage.addFriendship(userId, friendId);
+        log.info("пользователь с id = {} добавлен в друзья пользователю с id = {}", friendId, userId);
     }
 
-    public void removeFriend(Long userId, Long friendId) {
-        log.info("пользователь с id = {} удален у пользователя с id = {}", userId, friendId);
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        user.getFriends().remove(friendId);
-        friend.getFriends().remove(userId);
+    public void removeFriend(Integer userId, Integer friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+
+        log.info("пользователь с id = {} удален у пользователя с id = {}", friendId, userId);
+        userStorage.removeFriendship(userId, friendId);
     }
 
-    public Set<User> showCommonFriends(Long userId, Long friendId) {
+    public List<User> showCommonFriends(Integer userId, Integer friendId) {
+        getUserOrThrow(userId);
+        getUserOrThrow(friendId);
+
         log.info("показ общих друзей у пользователей с id {} и {}", userId, friendId);
-        User user = getUserOrThrow(userId);
-        User friend = getUserOrThrow(friendId);
-        return user.getFriends().stream()
-                .filter(id -> friend.getFriends().contains(id))
-                .map(this::findUserById)
-                .collect(Collectors.toSet());
+        return userStorage.showCommonFriends(userId, friendId);
     }
 
-    private User getUserOrThrow(long id) {
+    private User getUserOrThrow(Integer id) {
         return userStorage.findUserById(id).orElseThrow(
-                () -> new NotFoundException("Пользователь с id =" + id + " не найдем")
+                () -> new NotFoundException("Пользователь с id = " + id + " не найден")
         );
     }
 

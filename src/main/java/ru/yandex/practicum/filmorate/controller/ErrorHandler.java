@@ -23,7 +23,7 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFound(final NotFoundException e) {
-        log.info("запущен метод обработки не найденных данных");
+        log.info("запущен метод обработки не найденных данных: {}", e.getMessage());
         return new ErrorResponse(e.getMessage());
     }
 

@@ -22,6 +22,7 @@ public class FilmController {
     }
 
     @GetMapping
+    @ResponseBody
     public Collection<Film> findAll() {
         log.info("GET /films - получить все фильмы");
         return filmService.findAll();
@@ -29,7 +30,7 @@ public class FilmController {
 
     @GetMapping("/{filmId}")
     @ResponseBody
-    public Film findFilmById(@PathVariable Long filmId) {
+    public Film findFilmById(@PathVariable int filmId) {
         log.info("GET /films/{filmId} - получить фильм по id");
         return filmService.findFilmById(filmId);
     }
@@ -41,13 +42,13 @@ public class FilmController {
         return filmService.getTopFilm(count);
     }
 
+
     @PostMapping
     @ResponseBody
     public Film create(@RequestBody Film film) {
-        log.info("POST /films создание фильма");
+        log.info("POST /films создание фильма =  {}", film);
         validator.validate(film);
-        filmService.create(film);
-        return film;
+        return filmService.create(film);
     }
 
     @PutMapping
@@ -58,14 +59,14 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> addLike(@PathVariable long id, @PathVariable long userId) {
+    public ResponseEntity<Void> addLike(@PathVariable int id, @PathVariable int userId) {
         log.info("PUT /films/{}/like/ добавить лайк", id);
         filmService.addLike(userId, id);
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public ResponseEntity<Void> deleteLike(@PathVariable long id,@PathVariable long userId) {
+    public ResponseEntity<Void> deleteLike(@PathVariable int id,@PathVariable int userId) {
         log.info("DELETE /films/{}/like удалить лайк", id);
         filmService.deleteLike(userId, id);
         return ResponseEntity.ok().build();
