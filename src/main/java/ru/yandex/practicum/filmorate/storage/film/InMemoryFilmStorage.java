@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
-    private final Map<Long, Film> films = new HashMap<>();
+    private final Map<Integer, Film> films = new HashMap<>();
     private final FilmValidator validator = new FilmValidator();
 
     public Collection<Film> findAll() {
@@ -56,15 +56,20 @@ public class InMemoryFilmStorage implements FilmStorage {
             }
 
         }
-        return Optional.ofNullable(oldFilm);
+        return Optional.of(oldFilm);
     }
 
 
-    public Optional<Film> findFilmById(Long id) {
-        return Optional.ofNullable(films.get(id));
+    public Optional<Film> findFilmById(Integer id) {
+        return Optional.of(films.get(id));
     }
 
-    public boolean isFilmExist(Long id) {
+    @Override
+    public void addLike(Integer filmId, Integer userId) {
+        films.get(filmId).getLikes().add(userId);
+    }
+
+    public boolean isFilmExist(Integer id) {
         return films.containsKey(id);
     }
 
@@ -74,6 +79,11 @@ public class InMemoryFilmStorage implements FilmStorage {
                .stream()
                .map(Film::getName)
                .anyMatch(f -> f.equals(name));
+    }
+
+    @Override
+    public void removeLike(Integer filmId, Integer userId) {
+        films.get(filmId).getLikes().remove(userId);
     }
 
     public List<Film> getTopFilm(long count) {
@@ -86,11 +96,11 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
     // вспомогательный метод для генерации идентификатора нового пользователя
-    private long getNextId() {
+    private Integer getNextId() {
         log.info("вызван метод создания id");
-        long currentMaxId = films.keySet()
+        int currentMaxId = films.keySet()
                 .stream()
-                .mapToLong(id -> id)
+                .mapToInt(id -> id)
                 .max()
                 .orElse(0);
         return ++currentMaxId;

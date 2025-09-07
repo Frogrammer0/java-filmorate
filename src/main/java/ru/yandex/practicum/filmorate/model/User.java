@@ -9,12 +9,11 @@ import java.util.Set;
 @Data
 public class User {
 
+    Integer id;
     String login;
     String name;
     String email;
     LocalDate birthday;
-    Long id;
-    Set<Long> friends = new HashSet<>();
-    Set<Long> likes = new HashSet<>();
-    FriendshipStatus status;
+    Set<Integer> friends = new HashSet<>();
+    Set<Integer> likes = new HashSet<>();
 }

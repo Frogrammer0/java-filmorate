@@ -1,19 +1,18 @@
 package ru.yandex.practicum.filmorate.model;
 
+
 import lombok.Data;
 import java.time.LocalDate;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 public class Film {
-    Long id;
+    Integer id;
     String name;
     String description;
-    Long duration;
+    Integer duration;
     LocalDate releaseDate;
-    Set<Long> likes = new HashSet<>();
-    EnumSet<Genre> genres;
-    Rating rating;
+    Set<Integer> likes = new HashSet<>();
+    List<Genre> genres = new ArrayList<>();
+    Mpa mpa;
 }
